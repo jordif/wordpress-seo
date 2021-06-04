@@ -4,17 +4,30 @@ namespace Yoast\WP\SEO\Premium\Integrations\Admin;
 
 use Yoast\WP\SEO\Conditionals\Admin_Conditional;
 use Yoast\WP\SEO\Integrations\Integration_Interface;
+use Yoast\WP\SEO\Repositories\Indexable_Repository;
 
 /**
  * WorkflowsIntegration class
  */
 class Workflows_Integration implements Integration_Interface {
+	/**
+	 * @var Indexable_Repository The indexable repository.
+	 */
+	private $indexable_repository;
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public static function get_conditionals() {
 		return [ Admin_Conditional::class ];
+	}
+
+	/**
+	 * Workflows_Integration constructor.
+	 * @param Indexable_Repository $indexable_repository The indexables repository.
+	 */
+	public function __construct( Indexable_Repository $indexable_repository ) {
+		$this->indexable_repository = $indexable_repository;
 	}
 
 	/**
@@ -51,6 +64,11 @@ class Workflows_Integration implements Integration_Interface {
 	public function enqueue_assets() {
 		$asset_manager = new \WPSEO_Admin_Asset_Manager();
 		$asset_manager->enqueue_script( 'workflows' );
+		$asset_manager->localize_script( 'workflows', 'wpseoWorkflowsData', [
+			'cornerstones' => $this->indexable_repository->query()
+				->where( 'is_cornerstone', true )
+				->find_many()
+		] );
 	}
 
 	/**

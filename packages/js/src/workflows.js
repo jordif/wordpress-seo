@@ -2,9 +2,64 @@ import { render } from "@wordpress/element";
 import { __ } from "@wordpress/i18n";
 import { Paper } from "@yoast/components";
 
+const Cornerstones = function() {
+	const cornerstones = window.wpseoWorkflowsData.cornerstones;
+	if ( cornerstones.length > 0 ) {
+		return (
+			<div>
+				<p>
+					<em>
+						{
+							sprintf(
+								__(
+									"You currently have %1$s articles marked as cornerstone:",
+									"wordpress-seo"
+								),
+								cornerstones.length
+							)
+						}
+					</em>
+				</p>
+				<table>
+					<tr>
+						<th>{ __( "Article", "wordpress-seo" ) }</th>
+						<th>{ __( "Type", "wordpress-seo" ) }</th>
+						<th>{ __( "Incoming links", "wordpress-seo" ) }</th>
+					</tr>
+					{
+						cornerstones.map( function( cornerstone ) {
+							return (
+								<tr key={ cornerstone.id }>
+									<td><a href={ cornerstone.permalink }>{ cornerstone.breadcrumb_title }</a></td>
+									<td>{ cornerstone.object_sub_type }</td>
+									<td>{ cornerstone.incoming_link_count || 0 }</td>
+								</tr>
+							);
+						} )
+					}
+				</table>
+			</div>
+		);
+	} else {
+		return (
+			<p>
+				<em>
+					{
+						__(
+							"You currently have no articles marked as cornerstone." +
+							" When you mark your articles as cornerstone, they will show up here.",
+							"wordpress-seo"
+						)
+					}
+				</em>
+			</p>
+		);
+	}
+};
+
 /**
  * Renders the WorkflowsPage
- * @returns {JSX.Element} The page.
+ * @returns {wp.Element} The page.
  * @constructor
  */
 const WorkFlowsPage = function() {
@@ -62,7 +117,7 @@ const WorkFlowsPage = function() {
 								"wordpress-seo"
 							) }
 						</p>
-						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2017/04/overview-cornerstones.png" />
+						<Cornerstones />
 					</li>
 					<li>
 						<h4>{ __( "Check for internal links", "wordpress-seo" ) }</h4>
