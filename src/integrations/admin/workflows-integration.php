@@ -49,7 +49,7 @@ class Workflows_Integration implements Integration_Interface {
 		$submenu_pages[4] = [
 			'wpseo_dashboard',
 			'',
-			__( 'Workflows', 'wordpress-seo-premium' ),
+			__( 'Workouts', 'wordpress-seo-premium' ),
 			'edit_posts',
 			'wpseo_workflows',
 			[ $this, 'render_target' ],

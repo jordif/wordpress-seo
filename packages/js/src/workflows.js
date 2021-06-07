@@ -1,44 +1,29 @@
-import { render } from "@wordpress/element";
-import { __ } from "@wordpress/i18n";
+import { createInterpolateElement, render } from "@wordpress/element";
+import { __, sprintf } from "@wordpress/i18n";
 import { Paper } from "@yoast/components";
 
 const Cornerstones = function() {
 	const cornerstones = window.wpseoWorkflowsData.cornerstones;
 	if ( cornerstones.length > 0 ) {
 		return (
-			<div>
-				<p>
-					<em>
-						{
-							sprintf(
-								__(
-									"You currently have %1$s articles marked as cornerstone:",
-									"wordpress-seo"
-								),
-								cornerstones.length
-							)
-						}
-					</em>
-				</p>
-				<table>
-					<tr>
-						<th>{ __( "Article", "wordpress-seo" ) }</th>
-						<th>{ __( "Type", "wordpress-seo" ) }</th>
-						<th>{ __( "Incoming links", "wordpress-seo" ) }</th>
-					</tr>
-					{
-						cornerstones.map( function( cornerstone ) {
-							return (
-								<tr key={ cornerstone.id }>
-									<td><a href={ cornerstone.permalink }>{ cornerstone.breadcrumb_title }</a></td>
-									<td>{ cornerstone.object_sub_type }</td>
-									<td>{ cornerstone.incoming_link_count || 0 }</td>
-								</tr>
-							);
-						} )
-					}
-				</table>
-			</div>
+			<table>
+				<tr>
+					<th>{ __( "Article", "wordpress-seo" ) }</th>
+					<th>{ __( "Type", "wordpress-seo" ) }</th>
+					<th>{ __( "Incoming links", "wordpress-seo" ) }</th>
+				</tr>
+				{
+					cornerstones.map( function( cornerstone ) {
+						return (
+							<tr key={ cornerstone.id }>
+								<td><a href={ cornerstone.permalink }>{ cornerstone.breadcrumb_title }</a></td>
+								<td>{ cornerstone.object_sub_type }</td>
+								<td>{ cornerstone.incoming_link_count || 0 }</td>
+							</tr>
+						);
+					} )
+				}
+			</table>
 		);
 	} else {
 		return (
@@ -66,12 +51,12 @@ const WorkFlowsPage = function() {
 	return (
 		<div>
 			<h1>
-				{ __( "Workflows", "wordpress-seo" ) }
+				{ __( "SEO Workouts", "wordpress-seo" ) }
 			</h1>
 			<p>
 				{ __(
 					"Getting your site in shape and keeping it SEO fit can be challenging. Let us help you get started by taking on" +
-					" the most common SEO challenges, with these step by step workflows,",
+					" the most common SEO challenges, with these step by step SEO workouts,",
 					"wordpress-seo"
 				) }
 			</p>
@@ -79,76 +64,129 @@ const WorkFlowsPage = function() {
 				<h2>{ __( "The cornerstone approach", "wordpress-seo" ) }</h2>
 				<h3>{ __( "Rank with articles you want to rank with", "wordpress-seo" ) }</h3>
 				<p>
-					{ __(
-						"On your site, you'll probably have a few articles that are most important. Articles you want to rank with in Google." +
-						" At Yoast, We call these articles your cornerstone articles. Let us walk you through how Yoast SEO helps you set up a" +
-						" cornerstone strategy.",
-						"wordpress-seo"
-					) }
+					{
+						createInterpolateElement(
+							sprintf(
+								__(
+									"On your site you have a few articles that are %1$sthe%2$s most important. You want to rank highest in " +
+									"Google with these articles. At Yoast, we call these articles cornerstone articles. Take the " +
+									"following 6 steps in order to start ranking with your cornerstone articles!",
+									"wordpress-seo"
+								),
+								"<em>",
+								"</em>"
+							),
+							{ em: <em /> }
+						)
+					}
 				</p>
-				<hr/>
+				<hr />
 				<ol>
 					<li>
-						<h4>{ __( "Start by choosing your cornerstones", "wordpress-seo" ) }</h4>
+						<h4>{ __( "Choose your cornerstones!", "wordpress-seo" ) }</h4>
 						<p>
-							{ __(
-								"Which articles are most precious to you? Which are the most complete and authoritative?" +
-								" Choose these to be your cornerstone content.",
-								"wordpress-seo"
-							) }
+							{
+								createInterpolateElement(
+									sprintf(
+										__(
+											"With which articles do you want to rank highest? Which are the most complete, which are the " +
+											"best explainers, which are %1$sthe%2$s most important? Check out your own website and choose the " +
+											"pages and posts you want to be your cornerstone articles!",
+											"wordpress-seo"
+										),
+										"<em>",
+										"</em>"
+									),
+									{ em: <em /> }
+								)
+							}
 						</p>
 					</li>
 					<li>
 						<h4>{ __( "Mark these articles as cornerstone content", "wordpress-seo" ) }</h4>
 						<p>
-							{ __(
-								"Navigate to the Post overview. Find - and go into - these articles and mark them as cornerstone content.",
-								"wordpress-seo"
-							) }
+							{
+								createInterpolateElement(
+									sprintf(
+										__(
+											"Surf to each one of your cornerstones on your own website. Hit %1$sedit post%2$s and go to the " +
+											"WordPress Backend. Mark them as cornerstones in the SEO tab of the metabox or the sidebar " +
+											"of Yoast SEO.",
+											"wordpress-seo"
+										),
+										"<em>",
+										"</em>"
+									),
+									{ em: <em /> }
+								)
+							}
 						</p>
 						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2019/11/stale-cornerstone-content-in-yoast-seo.jpg" />
 					</li>
 					<li>
-						<h4>{ __( "Check if your cornerstones are correct", "wordpress-seo" ) }</h4>
+						<h4>{ __( "Check whether your cornerstones are correct", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
-								"In the Post overview, use our Cornerstone content filter to check if you're satisfied with" +
-								" the cornerstone articles you've picked",
+								"Check whether the articles you’ve marked as cornerstones are the correct ones in this list:",
 								"wordpress-seo"
 							) }
 						</p>
 						<Cornerstones />
 					</li>
 					<li>
-						<h4>{ __( "Check for internal links", "wordpress-seo" ) }</h4>
+						<h4>{ __( "Check the number of incoming internal links of your cornerstones", "wordpress-seo" ) }</h4>
 						<p>
-							{ __(
-								"You want your cornerstone articles to have the most internal links (other articles linking to your" +
-								" cornerstone article). You can sort your articles based on incoming link counts in the post overview" +
-								" to see if this is the case.",
-								"wordpress-seo"
-							) }
+							{
+								createInterpolateElement(
+									sprintf(
+										__(
+											"Other articles on your site should link towards your most important cornerstones. Use the %1$sText " +
+											"Link Counter%2$s in the post overview to check out which articles have the most internal links " +
+											"pointing towards them.",
+											"wordpress-seo"
+										),
+										"<strong>",
+										"</strong>"
+									),
+									{ strong: <strong /> }
+								)
+							}
+						</p>
+						<p>
+							<strong>
+								{ __( "Check: do your cornerstones have the most internal links pointing towards them?", "wordpress-seo" ) }
+							</strong>
 						</p>
 						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2017/07/text-links-counter.png" />
 					</li>
 					<li>
-						<h4>{ __( "If too little, at links from other articles", "wordpress-seo" ) }</h4>
+						<h4>{ __( "Add internal links towards your cornerstones", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
-								"If you have a limited number of internal links for your cornerstone articles, make sure to add some!" +
-								" But, do make sure there's a logical relationship between the article you're linking from and the" +
-								" cornerstone article you're linking to. For this you can use our internal linking suggestions.",
+								"If you have limited internal links pointing towards your cornerstones, add internal links from " +
+								"other posts to your cornerstones. But, make sure that there’s a logical relationship between the " +
+								"article you're linking from and your cornerstone. For this you can use our internal linking suggestions.",
 								"wordpress-seo"
 							) }
+						</p>
+						<p>
+							<strong>
+								{ __(
+									"Go to a related article, find a relevant sentence which is related to your cornerstone " +
+									"article. Insert a text link to your cornerstone in that sentence. Repeat with another related " +
+									"article until your cornerstones have the most internal links pointing towards them.",
+									"wordpress-seo"
+								) }
+							</strong>
 						</p>
 						<img style={ { maxWidth: "280px" } } src="https://yoast.com/app/uploads/2020/08/internal_links_tool_Yoast_SEO-409x800.png" />
 					</li>
 					<li>
-						<h4>{ __( "All set!", "wordpress-seo" ) }</h4>
+						<h4>{ __( "Well done!", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
-								"Well done! You've taken the first steps into setting up a cornerstone strategy for your site." +
-								" Make sure to regularly check if this strategy is up to date.",
+								"With your internal links, you’ve shown Google which articles are most important on your " +
+								"website! Make sure to check regularly whether your cornerstone approach is still up to date!",
 								"wordpress-seo"
 							) }
 						</p>
