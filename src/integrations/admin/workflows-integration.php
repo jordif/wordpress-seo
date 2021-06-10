@@ -155,6 +155,7 @@ class Workflows_Integration implements Integration_Interface {
 				content: "";
 				background: url("data:image/svg+xml,<svg width='24' fill='none' stroke='%23FFFFFF' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg' role='img' aria-hidden='true' focusable='false'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'></path></svg>") #a4286a;
 				background-size: 20px 20px;
+				background-repeat: no-repeat;
 				background-position: center center;
 			}
 
