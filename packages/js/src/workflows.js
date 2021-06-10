@@ -180,33 +180,40 @@ const WorkFlowsPage = function( { resetStep, finishStep } ) {
 					}
 				</p>
 				<hr />
-				<ol>
+				<ol className="workflow yoast">
 					<li className={ isFinished( STEPS.chooseCornerstones ) ? "finished" : "" }>
 						<h4>{ __( "Start: Choose your cornerstones!", "wordpress-seo" ) }</h4>
-						<p>
-							{ __(
-								"Your site might not feel that SEO fit just yet. But that's just a matter of time. " +
-								"Let's start this workout by choosing your cornerstones.",
-								"wordpress-seo"
-							) }
-						</p>
-						<p>
-							{
-								createInterpolateElement(
-									sprintf(
-										__(
-											"With which articles do you want to rank highest? Which are the most complete, which are the " +
-											"best explainers, which are %1$sthe%2$s most important? Check out your own website and choose the " +
-											"pages and posts you want to be your cornerstone articles!",
-											"wordpress-seo"
+						<div className="workflow__grid">
+							<div>
+							<p>
+								{ __(
+									"Your site might not feel that SEO fit just yet. But that's just a matter of time. " +
+									"Let's start this workout by choosing your cornerstones.",
+									"wordpress-seo"
+								) }
+							</p>
+							<p>
+								{
+									createInterpolateElement(
+										sprintf(
+											__(
+												"With which articles do you want to rank highest? Which are the most complete, which are the " +
+												"best explainers, which are %1$sthe%2$s most important? Check out your own website and choose the " +
+												"pages and posts you want to be your cornerstone articles!",
+												"wordpress-seo"
+											),
+											"<em>",
+											"</em>"
 										),
-										"<em>",
-										"</em>"
-									),
-									{ em: <em /> }
-								)
-							}
-						</p>
+										{ em: <em /> }
+									)
+								}
+							</p>
+							</div>
+							<div>
+								<img className="workflow__image" src="https://yoast.com/app/uploads/2021/06/seo_fitness_assistants_unfit.svg" />
+							</div>
+						</div>
 						<FinishButton
 							onClick={ () => { toggleStep( STEPS.chooseCornerstones ); } }
 							isFinished={ isFinished( STEPS.chooseCornerstones ) }
@@ -231,7 +238,9 @@ const WorkFlowsPage = function( { resetStep, finishStep } ) {
 								)
 							}
 						</p>
-						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2019/11/stale-cornerstone-content-in-yoast-seo.jpg" />
+						<p>
+							<img src="https://yoast.com/app/uploads/2019/11/stale-cornerstone-content-in-yoast-seo.jpg" />
+						</p>
 						<FinishButton
 							onClick={ () => { toggleStep( STEPS.markCornerstones ); } }
 							isFinished={ isFinished( STEPS.markCornerstones ) }
@@ -300,7 +309,9 @@ const WorkFlowsPage = function( { resetStep, finishStep } ) {
 								) }
 							</strong>
 						</p>
-						<img style={ { maxWidth: "280px" } } src="https://yoast.com/app/uploads/2020/08/internal_links_tool_Yoast_SEO-409x800.png" />
+						<p>
+							<img style={ { maxWidth: "280px" } } src="https://yoast.com/app/uploads/2020/08/internal_links_tool_Yoast_SEO-409x800.png" />
+						</p>
 						<FinishButton
 							onClick={ () => { toggleStep( STEPS.addLinks ); } }
 							isFinished={ isFinished( STEPS.addLinks ) }
@@ -308,15 +319,22 @@ const WorkFlowsPage = function( { resetStep, finishStep } ) {
 					</li>
 					<li className={ cornerstoneSteps.length === STEPS.length ? "finished" : "" }>
 						<h4>{ __( "Well done!", "wordpress-seo" ) }</h4>
-						<p>
-							{ __(
-								"With your internal links, you’ve shown Google which articles are most important on your " +
-								"website! Make sure to check regularly whether your cornerstone approach is still up to date!",
-								"wordpress-seo"
-							) }
-						</p>
+						<div className="workflow__grid">
+							<div>
+							<p>
+								{ __(
+									"With your internal links, you’ve shown Google which articles are most important on your " +
+									"website! Make sure to check regularly whether your cornerstone approach is still up to date!",
+									"wordpress-seo"
+								) }
+							</p>
+							<Button className="yoast-button yoast-button--primary">{ __( "I finished this workout", "wordpress-seo" ) }</Button>
+							</div>
+							<div>
+								<img className="workflow__image" src="https://yoast.com/app/uploads/2021/06/seo_fitness_assistants_fit.svg" />
+							</div>
+						</div>
 					</li>
-					<Button>{ __( "I finished this workout", "wordpress-seo" ) }</Button>
 				</ol>
 				<hr />
 				<p>
@@ -371,4 +389,3 @@ render(
 	<WorkoutsContainer />,
 	document.getElementById( "wpseo-workflows-container" )
 );
-
