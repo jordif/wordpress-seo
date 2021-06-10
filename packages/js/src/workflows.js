@@ -1,28 +1,48 @@
 import { createInterpolateElement, render } from "@wordpress/element";
 import { __, sprintf } from "@wordpress/i18n";
-import { Paper } from "@yoast/components";
+import { Paper, Button } from "@yoast/components";
+import * as actions from "./redux/actions/workouts";
+import * as selectors from "./redux/selectors/workouts";
+import workoutsReducer from "./redux/reducers/workouts";
+import { register, createReduxStore, withDispatch, useSelect } from "@wordpress/data";
+import { compose } from "@wordpress/compose";
 
-const Cornerstones = function() {
+const STEPS = {
+	chooseCornerstones: "chooseCornerstones",
+	markCornerstones: "markCornerstones",
+	checkCornerstones: "checkCornerstones",
+	checkLinks: "checkLinks",
+	addLinks: "addLinks",
+};
+
+/**
+ *
+ * @returns {JSX.Element}
+ * @constructor
+ */
+const Cornerstones = () => {
 	const cornerstones = window.wpseoWorkflowsData.cornerstones;
 	if ( cornerstones.length > 0 ) {
 		return (
-			<table>
-				<tr>
-					<th>{ __( "Article", "wordpress-seo" ) }</th>
-					<th>{ __( "Type", "wordpress-seo" ) }</th>
-					<th>{ __( "Incoming links", "wordpress-seo" ) }</th>
-				</tr>
-				{
-					cornerstones.map( function( cornerstone ) {
-						return (
-							<tr key={ cornerstone.id }>
-								<td><a href={ cornerstone.permalink }>{ cornerstone.breadcrumb_title }</a></td>
-								<td>{ cornerstone.object_sub_type }</td>
-								<td>{ cornerstone.incoming_link_count || 0 }</td>
-							</tr>
-						);
-					} )
-				}
+			<table className="yoast_help">
+				<thead>
+					<tr>
+						<th>{ __( "Article", "wordpress-seo" ) }</th>
+						<th>{ __( "Type", "wordpress-seo" ) }</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						cornerstones.map( function( cornerstone ) {
+							return (
+								<tr key={ cornerstone.id }>
+									<td><a href={ cornerstone.permalink }>{ cornerstone.breadcrumb_title }</a></td>
+									<td>{ cornerstone.object_sub_type }</td>
+								</tr>
+							);
+						} )
+					}
+				</tbody>
 			</table>
 		);
 	} else {
@@ -43,11 +63,90 @@ const Cornerstones = function() {
 };
 
 /**
+ *
+ * @returns {JSX.Element}
+ * @constructor
+ */
+const IndexablesByLinks = () => {
+	const bestlinked = window.wpseoWorkflowsData.mostLinks;
+	if ( bestlinked.length > 0 ) {
+		return (
+			<table className="yoast_help">
+				<thead>
+					<tr>
+						<th>{ __( "Incoming Links", "wordpress-seo" ) }</th>
+						<th>{ __( "Article", "wordpress-seo" ) }</th>
+						<th>{ __( "Type", "wordpress-seo" ) }</th>
+					</tr>
+				</thead>
+				<tbody>
+					{
+						bestlinked.map( function( indexable ) {
+							return (
+								<tr
+									key={ indexable.id }
+									className={ indexable.is_cornerstone === "1" ? "cornerstone" : "" }
+								>
+									<td>{ indexable.incoming_link_count || "0" }</td>
+									<td>
+										{ indexable.is_cornerstone === "1" ? "★ " : "" }
+										<a href={ indexable.permalink }>{ indexable.breadcrumb_title }</a>
+									</td>
+									<td>{ indexable.object_sub_type || indexable.object_type }</td>
+								</tr>
+							);
+						} )
+					}
+				</tbody>
+			</table>
+		);
+	} else {
+		return (
+			<p>
+				<em>
+					{
+						__(
+							"We were unable to find internal links on your pages. Either you haven't added any internal links " +
+							"to your content yet, or Yoast SEO didn't index them. You can have Yoast SEO index your links by running " +
+							"the SEO data optimization under SEO > Tools.",
+							"wordpress-seo"
+						)
+					}
+				</em>
+			</p>
+		);
+	}
+};
+
+const FinishButton = ( { onClick, isFinished } ) => {
+	const copy = isFinished ? __( "Reset this step", "wordpress-seo" ) : __( "I've finished this step", "wordpress-seo" );
+
+	return <Button onClick={ onClick }>{ copy }</Button>;
+};
+
+/**
  * Renders the WorkflowsPage
  * @returns {wp.Element} The page.
  * @constructor
  */
-const WorkFlowsPage = function() {
+const WorkFlowsPage = function( { resetStep, finishStep } ) {
+	let cornerstoneSteps = useSelect( ( select ) => {
+		return select( "yoast-seo/workouts" ).getWorkout( "cornerstone" ).finishedSteps;
+	}, [] );
+
+	const toggleStep = ( step ) => {
+		if ( cornerstoneSteps.includes( step ) ) {
+			return resetStep( "cornerstone", step );
+		}
+		return finishStep( "cornerstone", step );
+	};
+
+	const isFinished = ( step ) => {
+		if ( cornerstoneSteps.includes( step ) ) {
+			return true;
+		}
+		return false;
+	};
 	return (
 		<div>
 			<h1>
@@ -60,7 +159,7 @@ const WorkFlowsPage = function() {
 					"wordpress-seo"
 				) }
 			</p>
-			<Paper style={ { maxWidth: "600px", padding: "16px" } }>
+			<div className="card">
 				<h2>{ __( "The cornerstone approach", "wordpress-seo" ) }</h2>
 				<h3>{ __( "Rank with articles you want to rank with", "wordpress-seo" ) }</h3>
 				<p>
@@ -82,8 +181,15 @@ const WorkFlowsPage = function() {
 				</p>
 				<hr />
 				<ol>
-					<li>
-						<h4>{ __( "Choose your cornerstones!", "wordpress-seo" ) }</h4>
+					<li className={ isFinished( STEPS.chooseCornerstones ) ? "finished" : "" }>
+						<h4>{ __( "Start: Choose your cornerstones!", "wordpress-seo" ) }</h4>
+						<p>
+							{ __(
+								"Your site might not feel that SEO fit just yet. But that's just a matter of time. " +
+								"Let's start this workout by choosing your cornerstones.",
+								"wordpress-seo"
+							) }
+						</p>
 						<p>
 							{
 								createInterpolateElement(
@@ -101,8 +207,12 @@ const WorkFlowsPage = function() {
 								)
 							}
 						</p>
+						<FinishButton
+							onClick={ () => { toggleStep( STEPS.chooseCornerstones ); } }
+							isFinished={ isFinished( STEPS.chooseCornerstones ) }
+						/>
 					</li>
-					<li>
+					<li className={ isFinished( STEPS.markCornerstones ) ? "finished" : "" }>
 						<h4>{ __( "Mark these articles as cornerstone content", "wordpress-seo" ) }</h4>
 						<p>
 							{
@@ -122,8 +232,12 @@ const WorkFlowsPage = function() {
 							}
 						</p>
 						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2019/11/stale-cornerstone-content-in-yoast-seo.jpg" />
+						<FinishButton
+							onClick={ () => { toggleStep( STEPS.markCornerstones ); } }
+							isFinished={ isFinished( STEPS.markCornerstones ) }
+						/>
 					</li>
-					<li>
+					<li className={ isFinished( STEPS.checkCornerstones ) ? "finished" : "" }>
 						<h4>{ __( "Check whether your cornerstones are correct", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
@@ -132,17 +246,20 @@ const WorkFlowsPage = function() {
 							) }
 						</p>
 						<Cornerstones />
+						<FinishButton
+							onClick={ () => { toggleStep( STEPS.checkCornerstones ); } }
+							isFinished={ isFinished( STEPS.checkCornerstones ) }
+						/>
 					</li>
-					<li>
+					<li className={ isFinished( STEPS.checkLinks ) ? "finished" : "" }>
 						<h4>{ __( "Check the number of incoming internal links of your cornerstones", "wordpress-seo" ) }</h4>
 						<p>
 							{
 								createInterpolateElement(
 									sprintf(
 										__(
-											"Other articles on your site should link towards your most important cornerstones. Use the %1$sText " +
-											"Link Counter%2$s in the post overview to check out which articles have the most internal links " +
-											"pointing towards them.",
+											"Other articles on your site should link towards your most important cornerstones. " +
+											"Below you can check out which articles have the most internal links pointing towards them.",
 											"wordpress-seo"
 										),
 										"<strong>",
@@ -152,14 +269,18 @@ const WorkFlowsPage = function() {
 								)
 							}
 						</p>
+						<IndexablesByLinks />
 						<p>
 							<strong>
 								{ __( "Check: do your cornerstones have the most internal links pointing towards them?", "wordpress-seo" ) }
 							</strong>
 						</p>
-						<img style={ { maxWidth: "560px" } } src="https://yoast.com/app/uploads/2017/07/text-links-counter.png" />
+						<FinishButton
+							onClick={ () => { toggleStep( STEPS.checkLinks ); } }
+							isFinished={ isFinished( STEPS.checkLinks ) }
+						/>
 					</li>
-					<li>
+					<li className={ isFinished( STEPS.addLinks ) ? "finished" : "" }>
 						<h4>{ __( "Add internal links towards your cornerstones", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
@@ -180,8 +301,12 @@ const WorkFlowsPage = function() {
 							</strong>
 						</p>
 						<img style={ { maxWidth: "280px" } } src="https://yoast.com/app/uploads/2020/08/internal_links_tool_Yoast_SEO-409x800.png" />
+						<FinishButton
+							onClick={ () => { toggleStep( STEPS.addLinks ); } }
+							isFinished={ isFinished( STEPS.addLinks ) }
+						/>
 					</li>
-					<li>
+					<li className={ cornerstoneSteps.length === STEPS.length ? "finished" : "" }>
 						<h4>{ __( "Well done!", "wordpress-seo" ) }</h4>
 						<p>
 							{ __(
@@ -191,14 +316,59 @@ const WorkFlowsPage = function() {
 							) }
 						</p>
 					</li>
+					<Button>{ __( "I finished this workout", "wordpress-seo" ) }</Button>
 				</ol>
-			</Paper>
+				<hr />
+				<p>
+					{
+						createInterpolateElement(
+							sprintf(
+								__(
+									"Want to learn more about how to setup a successful cornerstone strategy? %1$sRead our ultimate guide%2$s.",
+									"wordpress-seo"
+								),
+								"<a>",
+								"</a>"
+							),
+							// eslint-disable-next-line jsx-a11y/anchor-has-content
+							{ a: <a href={ window.wpseoWorkflowsData.cornerstoneGuide } /> }
+						)
+					}
+				</p>
+			</div>
 		</div>
 	);
 };
 
+const store = createReduxStore( "yoast-seo/workouts", {
+	reducer: workoutsReducer,
+	actions,
+	selectors,
+} );
+register( store );
+
+const WorkoutsContainer = compose(
+	[
+		withDispatch(
+			( dispatch ) => {
+				const {
+					finishStep,
+					resetStep,
+					resetWorkout,
+				} = dispatch( "yoast-seo/workouts" );
+
+				return {
+					finishStep,
+					resetStep,
+					resetWorkout,
+				};
+			}
+		),
+	]
+)( WorkFlowsPage );
+
 render(
-	<WorkFlowsPage />,
+	<WorkoutsContainer />,
 	document.getElementById( "wpseo-workflows-container" )
 );
 

@@ -66,8 +66,17 @@ class Workflows_Integration implements Integration_Interface {
 		$asset_manager->enqueue_script( 'workflows' );
 		$asset_manager->localize_script( 'workflows', 'wpseoWorkflowsData', [
 			'cornerstones' => $this->indexable_repository->query()
+				->select_many( [ "id", "permalink", "breadcrumb_title", "is_cornerstone", "object_sub_type", "incoming_link_count" ] )
 				->where( 'is_cornerstone', true )
-				->find_many()
+				->find_array(),
+			'mostLinks' => $this->indexable_repository->query()
+				->where_raw( 'object_sub_type NOT IN ( "attachment" ) OR post_status IS NULL' )
+				->where_raw( 'post_status NOT IN ( "draft", "auto-draft" ) OR post_status IS NULL' )
+				->where_in( "object_type", ["term", "post"] )
+				->order_by_desc( 'incoming_link_count' )
+				->limit(20)
+				->find_array(),
+			'cornerstoneGuide' => 'https://yoast.com/how-to-set-up-a-cornerstone-content-strategy-with-yoast-seo/',
 		] );
 	}
 
@@ -75,6 +84,29 @@ class Workflows_Integration implements Integration_Interface {
 	 * Renders the target for the React to mount to.
 	 */
 	public function render_target() {
+		?>
+		<style>
+			#wpseo-workflows-container h1,
+			#wpseo-workflows-container h3 {
+				color: #a4286a;
+				font-weight: 500;
+			}
+			#wpseo-workflows-container h2 {
+				font-size: 12px;
+				text-transform: uppercase;
+			}
+			li.finished {
+				text-decoration: line-through;
+			}
+			tr.cornerstone {
+				font-weight: 800;
+			}
+			div.card {
+				max-width: 600px;
+				padding: 16px;
+			}
+		</style>
+		<?php
 		echo '<div id="wpseo-workflows-container"></div>';
 	}
 }
